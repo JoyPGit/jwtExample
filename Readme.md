@@ -18,8 +18,15 @@ git push -u origin main
 
 
 **Exception**
-1 Custom exception class 
-    - need to add getters and setters
+1 try catch
+    - throw new ResponseEntity<?>
     - ensure it doesn't extend Exception, this sends the whole stacktrace in response
+
+2 @ExceptionHandler
+    - custom exception sub class supported
+    - need to add getters and setters
+    
     - mutliple try catch blocks for each api
-2 
+
+3 ControllerAdvice 
+
