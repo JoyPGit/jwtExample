@@ -8,8 +8,11 @@ import com.auth.jwt_example.exception.ExceptionResponse;
 import com.auth.jwt_example.services.AuthenticationService;
 import com.auth.jwt_example.services.JwtService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 @RequestMapping("/auth")
 @RestController
@@ -24,12 +27,14 @@ public class UserLoginRegistryController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> register(@RequestBody RegisterUserDto registerUserDto) throws ExceptionResponse {
+    public ResponseEntity<?> register(@RequestBody RegisterUserDto registerUserDto) {
         User registeredUser = null;
         try {
             registeredUser = authenticationService.signup(registerUserDto);
         } catch (Exception ex){
-            return ResponseEntity.badRequest().body(ex.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(new ExceptionResponse(HttpStatusCode.valueOf(403),
+                            ex.getLocalizedMessage()));
             // entity
         }
 
@@ -48,13 +53,6 @@ public class UserLoginRegistryController {
         loginResponse.setToken(jwtToken);
 
         return ResponseEntity.ok(loginResponse);
-    }
-
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-
-    public ResponseEntity<ExceptionResponse> handleException(String msg) {
-        return ResponseEntity.badRequest().body(new ExceptionResponse(HttpStatus.BAD_REQUEST,
-                msg));
     }
 
 }
