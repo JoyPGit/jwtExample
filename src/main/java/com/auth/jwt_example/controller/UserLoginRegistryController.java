@@ -53,16 +53,5 @@ public class UserLoginRegistryController {
         return ResponseEntity.ok(loginResponse);
     }
 
-    /**
-     * wherever BadRequestException will be thrown, it will be caught here
-     * it takes the same class as parameter
-     * only works for one class, so can use subclass for diff apis
-     *
-      */
-    @ExceptionHandler(CustomBadRequestException.class)
-    public ResponseEntity<?> handleException(CustomBadRequestException badRequestException){
-        ExceptionResponse exceptionResponse = new ExceptionResponse(HttpStatusCode.valueOf(403),
-                badRequestException.getLocalizedMessage());
-        return ResponseEntity.badRequest().body(exceptionResponse);
-    }
+
 }
