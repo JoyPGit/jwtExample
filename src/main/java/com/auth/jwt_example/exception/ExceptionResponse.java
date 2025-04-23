@@ -1,12 +1,9 @@
 package com.auth.jwt_example.exception;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.time.LocalDateTime;
 
-@ResponseStatus(value=HttpStatus.BAD_REQUEST, reason= "Error in json")
 public class ExceptionResponse {
     private HttpStatusCode statusCode;
     private String errorMsg;

@@ -4,15 +4,14 @@ import com.auth.jwt_example.dto.LoginResponse;
 import com.auth.jwt_example.dto.LoginUserDto;
 import com.auth.jwt_example.dto.RegisterUserDto;
 import com.auth.jwt_example.entity.User;
+import com.auth.jwt_example.exception.CustomBadRequestException;
+import com.auth.jwt_example.exception.CustomSubException;
 import com.auth.jwt_example.exception.ExceptionResponse;
 import com.auth.jwt_example.services.AuthenticationService;
 import com.auth.jwt_example.services.JwtService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDateTime;
 
 @RequestMapping("/auth")
 @RestController
@@ -32,27 +31,38 @@ public class UserLoginRegistryController {
         try {
             registeredUser = authenticationService.signup(registerUserDto);
         } catch (Exception ex){
-            return ResponseEntity.badRequest()
-                    .body(new ExceptionResponse(HttpStatusCode.valueOf(403),
-                            ex.getLocalizedMessage()));
-            // entity
+            throw new CustomBadRequestException(ex.getLocalizedMessage());
         }
-
         return ResponseEntity.ok(registeredUser); // http response entity
     }
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> authenticate(@RequestBody LoginUserDto loginUserDto) {
-        User authenticatedUser = authenticationService.authenticate(loginUserDto);
+        LoginResponse loginResponse = null;
+        try {
+            User authenticatedUser = authenticationService.authenticate(loginUserDto);
+            String jwtToken = jwtService.generateToken(authenticatedUser);
 
-        String jwtToken = jwtService.generateToken(authenticatedUser);
-
-        LoginResponse loginResponse =
-                new LoginResponse();
-        loginResponse.setExpiresIn(jwtService.getExpirationTime());
-        loginResponse.setToken(jwtToken);
-
+            loginResponse =
+                    new LoginResponse();
+            loginResponse.setExpiresIn(jwtService.getExpirationTime());
+            loginResponse.setToken(jwtToken);
+        } catch (Exception ex){
+            throw new CustomSubException(ex.getLocalizedMessage());
+        }
         return ResponseEntity.ok(loginResponse);
     }
 
+    /**
+     * wherever BadRequestException will be thrown, it will be caught here
+     * it takes the same class as parameter
+     * only works for one class, so can use subclass for diff apis
+     *
+      */
+    @ExceptionHandler(CustomBadRequestException.class)
+    public ResponseEntity<?> handleException(CustomBadRequestException badRequestException){
+        ExceptionResponse exceptionResponse = new ExceptionResponse(HttpStatusCode.valueOf(403),
+                badRequestException.getLocalizedMessage());
+        return ResponseEntity.badRequest().body(exceptionResponse);
+    }
 }
